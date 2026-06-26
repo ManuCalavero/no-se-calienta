@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌡️ ¿Se está calentando?</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🌡️ ¿Se está calentando?</h1>
+    <p class="subtitle">Comparador de temperaturas históricas · Estación ws-82210</p>
+  </header>
+
+  <main>
+    <!-- Controles -->
+    <section class="controls">
+      <div class="control-group">
+        <label for="month-select">Mes</label>
+        <select id="month-select">
+          <option value="1">Enero</option>
+          <option value="2">Febrero</option>
+          <option value="3">Marzo</option>
+          <option value="4">Abril</option>
+          <option value="5">Mayo</option>
+          <option value="6" selected>Junio</option>
+          <option value="7">Julio</option>
+          <option value="8">Agosto</option>
+          <option value="9">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11">Noviembre</option>
+          <option value="12">Diciembre</option>
+        </select>
+      </div>
+
+      <div class="control-group metric-tabs" role="group" aria-label="Métrica">
+        <button class="metric-btn active" data-metric="media">🌡 Tª Media</button>
+        <button class="metric-btn" data-metric="min">🔵 Tª Mínima</button>
+        <button class="metric-btn" data-metric="max">🔴 Tª Máxima</button>
+        <button class="metric-btn" data-metric="precip">🌧 Precipitación</button>
+      </div>
+    </section>
+
+    <!-- Estado / Mensaje de error -->
+    <div id="status-msg" class="status-msg hidden"></div>
+
+    <!-- Contenedor de la tabla (scroll horizontal) -->
+    <div id="table-wrapper" class="table-wrapper">
+      <table id="data-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+        <tfoot id="table-foot"></tfoot>
+      </table>
+    </div>
+  </main>
+
+  <!-- Tooltip -->
+  <div id="tooltip" class="tooltip hidden" role="tooltip"></div>
+
+  <footer>
+    <p>Fuente: <a href="https://www.tutiempo.net" target="_blank" rel="noopener">tutiempo.net</a> · Estación ws-82210</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

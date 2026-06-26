@@ -1,0 +1,297 @@
+/* ============================================================
+   Variables y reset
+   ============================================================ */
+:root {
+  --bg:          #0f1117;
+  --bg-surface:  #1a1d27;
+  --bg-card:     #21253a;
+  --border:      #2e3347;
+  --text:        #e2e8f0;
+  --text-muted:  #7a8499;
+  --accent:      #6c8ef5;
+  --accent-2:    #f56c8e;
+  --today-ring:  #fbbf24;
+  --cur-year-bg: rgba(108, 142, 245, 0.12);
+
+  --cell-min-w:  52px;
+  --cell-h:      32px;
+  --radius:      8px;
+  --shadow:      0 4px 24px rgba(0,0,0,.45);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ============================================================
+   Header
+   ============================================================ */
+header {
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  background: linear-gradient(135deg, #1a1d27 0%, #0f1117 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #6c8ef5, #f56c8e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+header .subtitle {
+  margin-top: .4rem;
+  color: var(--text-muted);
+  font-size: .9rem;
+}
+
+/* ============================================================
+   Main
+   ============================================================ */
+main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Controls
+   ============================================================ */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+label {
+  font-size: .85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+select {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .45rem .8rem;
+  font-size: .95rem;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+}
+select:focus { border-color: var(--accent); }
+
+/* Metric tabs */
+.metric-tabs {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.metric-btn {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .45rem .9rem;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.metric-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.metric-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ============================================================
+   Status message
+   ============================================================ */
+.status-msg {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.status-msg.error { border-color: var(--accent-2); color: #f87171; }
+.hidden { display: none !important; }
+
+/* ============================================================
+   Table wrapper (horizontal scroll)
+   ============================================================ */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow);
+}
+
+/* ============================================================
+   Data table
+   ============================================================ */
+#data-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: .8rem;
+}
+
+/* Header row */
+#data-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .55rem .4rem;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  text-align: center;
+  min-width: var(--cell-min-w);
+  z-index: 2;
+}
+
+/* Day column (sticky left) */
+#data-table thead th:first-child,
+#data-table tbody td:first-child,
+#data-table tfoot td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--bg-card);
+  font-weight: 700;
+  border-right: 1px solid var(--border);
+}
+
+/* Current year column header highlight */
+#data-table thead th.cur-year {
+  color: var(--accent);
+  background: #1e2440;
+}
+
+/* Body cells */
+#data-table tbody td {
+  text-align: center;
+  padding: 0 .25rem;
+  height: var(--cell-h);
+  border-bottom: 1px solid var(--border);
+  transition: filter .1s;
+  cursor: default;
+  white-space: nowrap;
+}
+
+#data-table tbody td:hover {
+  filter: brightness(1.25);
+  outline: 1px solid rgba(255,255,255,.3);
+}
+
+/* Today row highlight */
+#data-table tbody tr.today-row td:first-child {
+  color: var(--today-ring);
+  border-left: 3px solid var(--today-ring);
+}
+
+/* Stats footer */
+#data-table tfoot td {
+  background: var(--bg-card);
+  font-weight: 700;
+  text-align: center;
+  padding: .55rem .4rem;
+  border-top: 2px solid var(--border);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+#data-table tfoot td.stat-val {
+  color: var(--text);
+  font-size: .78rem;
+}
+#data-table tfoot td:first-child {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+/* Current year column cells */
+#data-table tbody td.cur-year,
+#data-table tfoot td.cur-year {
+  background: var(--cur-year-bg);
+}
+
+/* ============================================================
+   Tooltip
+   ============================================================ */
+.tooltip {
+  position: fixed;
+  background: rgba(20, 23, 40, 0.97);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .45rem .7rem;
+  font-size: .82rem;
+  color: var(--text);
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,.6);
+  max-width: 240px;
+}
+.tooltip .tt-date { color: var(--text-muted); font-size: .75rem; margin-bottom: .2rem; }
+.tooltip .tt-val  { font-weight: 700; font-size: 1rem; }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+footer {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-muted);
+  font-size: .8rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Responsive tweaks
+   ============================================================ */
+@media (max-width: 600px) {
+  main { padding: .75rem; }
+  .controls { flex-direction: column; align-items: flex-start; }
+  .metric-btn { font-size: .78rem; padding: .38rem .7rem; }
+}
