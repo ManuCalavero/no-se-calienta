@@ -29,16 +29,19 @@ Chart.register(
 const START_YEAR = 1976
 const today = new Date()
 const maxDate = toIsoDate(today)
+const DEFAULT_STATION_CODE = '82210'
 
 let chart
 let weatherData
+let stationCatalog = []
+let stationCode = DEFAULT_STATION_CODE
 
 document.querySelector('#app').innerHTML = `
   <main class="layout">
     <header class="hero">
       <div class="hero-top">
         <div>
-          <p class="eyebrow">No Se Calienta · Madrid / Barajas · Estacion 82210</p>
+          <p id="heroStation" class="eyebrow">No Se Calienta · Estacion ${DEFAULT_STATION_CODE}</p>
           <h1>Evolucion climatica por dia del año</h1>
           <p class="subtitle">
             Compara la temperatura maxima, minima, media y la precipitacion del mismo dia
@@ -62,8 +65,14 @@ document.querySelector('#app').innerHTML = `
     </header>
 
     <section class="controls">
-      <label for="selectedDate">Selecciona una fecha (por defecto, hoy)</label>
-      <input id="selectedDate" type="date" min="${START_YEAR}-01-01" max="${maxDate}" value="${maxDate}" />
+      <div class="control-group">
+        <label for="stationSelect">Estacion</label>
+        <select id="stationSelect"></select>
+      </div>
+      <div class="control-group">
+        <label for="selectedDate">Fecha (por defecto, hoy)</label>
+        <input id="selectedDate" type="date" min="${START_YEAR}-01-01" max="${maxDate}" value="${maxDate}" />
+      </div>
       <p id="selectionInfo" class="selection-info"></p>
     </section>
     <section class="chart-panel">
@@ -77,9 +86,11 @@ document.querySelector('#app').innerHTML = `
 `
 
 const dateInput = document.querySelector('#selectedDate')
+const stationSelect = document.querySelector('#stationSelect')
 const selectionInfo = document.querySelector('#selectionInfo')
 const summaryCards = document.querySelector('#summaryCards')
 const insights = document.querySelector('#insights')
+const heroStation = document.querySelector('#heroStation')
 const heroCurrentAvg = document.querySelector('#heroCurrentAvg')
 const heroCurrentYear = document.querySelector('#heroCurrentYear')
 const heroChangeAvg = document.querySelector('#heroChangeAvg')
@@ -97,18 +108,114 @@ bootstrap().catch((error) => {
 })
 
 async function bootstrap() {
-  const response = await fetch('/weather-history.json', { cache: 'no-store' })
-  if (!response.ok) {
-    throw new Error('Falta el archivo weather-history.json en la carpeta public.')
-  }
+  await loadStationCatalog()
+  await loadStationData(stationCode)
 
-  weatherData = await response.json()
+  stationSelect.addEventListener('change', async () => {
+    stationCode = stationSelect.value
+    await loadStationData(stationCode)
+    renderForDate(dateInput.value)
+  })
 
   dateInput.addEventListener('change', () => {
     renderForDate(dateInput.value)
   })
 
   renderForDate(dateInput.value)
+}
+
+async function loadStationCatalog() {
+  stationCatalog = []
+
+  let discovered = []
+  let datasets = []
+  let defaultFromDataset = ''
+
+  try {
+    const discoveredResponse = await fetch('/stations-index.json', { cache: 'no-store' })
+    if (discoveredResponse.ok) {
+      const discoveredPayload = await discoveredResponse.json()
+      discovered = (discoveredPayload.stations || []).map((station) => ({
+        code: station.code,
+        name: station.name || `Estacion ${station.code}`,
+      }))
+    }
+  } catch {
+    // Ignore and fallback below.
+  }
+
+  try {
+    const dataIndexResponse = await fetch('/weather-history-index.json', { cache: 'no-store' })
+    if (dataIndexResponse.ok) {
+      const dataIndexPayload = await dataIndexResponse.json()
+      datasets = dataIndexPayload.stations || []
+      defaultFromDataset = dataIndexPayload.defaultStation || ''
+    }
+  } catch {
+    // Ignore and fallback below.
+  }
+
+  const datasetByCode = new Map(
+    datasets.map((station) => [station.code, { file: station.file, recordsCount: station.recordsCount }]),
+  )
+
+  if (discovered.length) {
+    stationCatalog = discovered.map((station) => {
+      const knownDataset = datasetByCode.get(station.code)
+      return {
+        ...station,
+        file: knownDataset?.file || `/stations/data/ws-${station.code}.json`,
+        hasLocalData: Boolean(knownDataset),
+      }
+    })
+  } else if (datasets.length) {
+    stationCatalog = datasets.map((station) => ({
+      code: station.code,
+      name: station.name || `Estacion ${station.code}`,
+      file: station.file || `/stations/data/ws-${station.code}.json`,
+      hasLocalData: true,
+    }))
+  } else {
+    stationCatalog = [
+      {
+        code: DEFAULT_STATION_CODE,
+        name: 'Madrid / Barajas',
+        file: '/weather-history.json',
+        hasLocalData: true,
+      },
+    ]
+  }
+
+  const firstWithData = stationCatalog.find((station) => station.hasLocalData)
+  stationCode =
+    defaultFromDataset || firstWithData?.code || stationCatalog[0]?.code || DEFAULT_STATION_CODE
+
+  stationSelect.innerHTML = stationCatalog
+    .map((station) => {
+      const suffix = station.hasLocalData ? '' : ' · sin datos locales'
+      return `<option value="${station.code}">${station.name} (${station.code})${suffix}</option>`
+    })
+    .join('')
+  stationSelect.value = stationCode
+}
+
+async function loadStationData(code) {
+  const station = stationCatalog.find((item) => item.code === code)
+  if (!station) {
+    throw new Error(`No se encontro la estacion ${code}.`)
+  }
+
+  const filePath = station.file || `/stations/data/ws-${station.code}.json`
+  const response = await fetch(filePath, { cache: 'no-store' })
+
+  if (!response.ok) {
+    throw new Error(
+      `No hay datos locales para ${station.name} (${station.code}). Ejecuta scrape para esa estacion o usa npm run scrape:all.`,
+    )
+  }
+
+  weatherData = await response.json()
+  heroStation.textContent = `No Se Calienta · ${station.name} · Estacion ${station.code}`
 }
 
 function renderForDate(isoDate) {

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "scrape": "node scripts/scrape-weather.mjs"
+    "scrape": "node scripts/scrape-weather.mjs",
+    "discover:stations": "node scripts/discover-stations.mjs",
+    "scrape:all": "node scripts/scrape-weather.mjs --all"
   },
   "devDependencies": {
     "vite": "^5.4.1"

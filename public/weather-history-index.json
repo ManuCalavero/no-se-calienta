@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-07-02T16:44:09.957Z",
+  "defaultStation": "82210",
+  "stations": [
+    {
+      "code": "82210",
+      "name": "Madrid / Barajas",
+      "file": "/stations/data/ws-82210.json",
+      "recordsCount": 18141,
+      "failedPages": 11,
+      "throughDate": "2026-07-02"
+    }
+  ]
+}

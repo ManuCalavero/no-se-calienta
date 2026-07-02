@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Doto:wght@100..900&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet');
+@import url('https://fonts.googleapis.com/css2?family=Doto:wght@100..900&family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
 
 :root {
   --bg: #070a0f;
@@ -43,6 +43,7 @@ body {
 }
 
 .hero,
+.controls,
 .chart-panel,
 .insight,
 .card {
@@ -145,9 +146,16 @@ h1 {
   padding: 0.95rem 1.1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 1rem;
   animation: fadeUp 600ms ease both;
+}
+
+.control-group {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 260px;
 }
 
 label {
@@ -155,7 +163,8 @@ label {
   color: #d9dee7;
 }
 
-input[type='date'] {
+input[type='date'],
+select {
   border: 1px solid #2f3643;
   border-radius: 12px;
   padding: 0.65rem 0.85rem;
@@ -165,10 +174,15 @@ input[type='date'] {
   max-width: 280px;
 }
 
+select {
+  min-width: 280px;
+}
+
 .selection-info {
   margin: 0;
   color: #919bac;
   font-size: 0.95rem;
+  min-width: 220px;
 }
 
 .cards {
