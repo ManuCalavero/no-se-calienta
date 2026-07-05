@@ -286,6 +286,10 @@ async function renderStationPage(codeFromRoute) {
     return
   }
 
+  const preferredDate = pickPreferredIsoDate(weatherData, maxDate)
+  dateInput.max = preferredDate
+  dateInput.value = preferredDate
+
   renderForDate(dateInput.value)
 
   function renderForDate(isoDate) {
@@ -698,6 +702,31 @@ function toIsoDate(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+function pickPreferredIsoDate(dataset, todayIso) {
+  const throughDate = dataset?.meta?.throughDate
+  const cappedIso = isIsoDate(throughDate) && throughDate < todayIso ? throughDate : todayIso
+  const currentYear = Number(cappedIso.slice(0, 4))
+  const monthDay = cappedIso.slice(5)
+  const hasCurrentYearAtCappedDate = (dataset?.byDay?.[monthDay] || []).some((entry) => entry.year === currentYear)
+
+  if (hasCurrentYearAtCappedDate) {
+    return cappedIso
+  }
+
+  const byDayEntries = Object.entries(dataset?.byDay || {})
+  const currentYearDates = byDayEntries
+    .filter(([, series]) => series.some((entry) => entry.year === currentYear))
+    .map(([dayKey]) => `${currentYear}-${dayKey}`)
+    .filter((iso) => iso <= cappedIso)
+    .sort()
+
+  if (currentYearDates.length) {
+    return currentYearDates[currentYearDates.length - 1]
+  }
+
+  return cappedIso
 }
 
 function formatDateWithoutYear(isoDate) {
