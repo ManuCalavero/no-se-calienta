@@ -201,6 +201,39 @@ select {
   min-width: 220px;
 }
 
+.control-group-action {
+  min-width: 360px;
+}
+
+.action-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.action-link,
+.action-button {
+  border: 1px solid #2f3643;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  background: #0c1119;
+  color: #dce4f0;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action-link:hover,
+.action-button:hover {
+  border-color: #43506a;
+}
+
+.action-hint {
+  margin: 0;
+  color: #8f9aac;
+  font-size: 0.86rem;
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

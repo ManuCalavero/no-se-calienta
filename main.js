@@ -30,6 +30,7 @@ Chart.register(
 
 const START_YEAR = 1976
 const DEFAULT_STATION_CODE = '82210'
+const UPDATE_WORKFLOW_URL = 'https://github.com/ManuCalavero/no-se-calienta/actions/workflows/update-weather-data.yml'
 const APP_BASE = normalizeBase(import.meta.env.BASE_URL)
 const today = new Date()
 const maxDate = toIsoDate(today)
@@ -228,6 +229,9 @@ async function renderStationPage(codeFromRoute) {
   const dateInput = document.querySelector('#selectedDate')
   const stationSelect = document.querySelector('#stationSelect')
   const selectionInfo = document.querySelector('#selectionInfo')
+  const updateWorkflowLink = document.querySelector('#updateWorkflowLink')
+  const updateStationHint = document.querySelector('#updateStationHint')
+  const copyStationCodeButton = document.querySelector('#copyStationCode')
   const summaryCards = document.querySelector('#summaryCards')
   const insights = document.querySelector('#insights')
   const heroStation = document.querySelector('#heroStation')
@@ -242,6 +246,17 @@ async function renderStationPage(codeFromRoute) {
     })
     .join('')
   stationSelect.value = currentStationCode
+  updateWorkflowLink.href = UPDATE_WORKFLOW_URL
+  updateStationHint.textContent = `Workflow manual: modo station, stationCode ${currentStationCode}.`
+
+  copyStationCodeButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(currentStationCode)
+      updateStationHint.textContent = `Copiado: ${currentStationCode}. En GitHub Actions usa mode=station y stationCode=${currentStationCode}.`
+    } catch {
+      updateStationHint.textContent = `No se pudo copiar automaticamente. Usa stationCode=${currentStationCode}.`
+    }
+  })
 
   document.querySelector('#backHome')?.addEventListener('click', (event) => {
     event.preventDefault()
@@ -403,6 +418,14 @@ function stationPageTemplate(code) {
         <div class="control-group">
           <label for="selectedDate">Fecha (por defecto, hoy)</label>
           <input id="selectedDate" type="date" min="${START_YEAR}-01-01" max="${maxDate}" value="${maxDate}" />
+        </div>
+        <div class="control-group control-group-action">
+          <label>Actualizar datos de esta estacion</label>
+          <div class="action-row">
+            <a id="updateWorkflowLink" class="action-link" href="${UPDATE_WORKFLOW_URL}" target="_blank" rel="noreferrer">Abrir workflow</a>
+            <button id="copyStationCode" type="button" class="action-button">Copiar stationCode</button>
+          </div>
+          <p id="updateStationHint" class="action-hint">Workflow manual: modo station, stationCode ${code}.</p>
         </div>
         <p id="selectionInfo" class="selection-info"></p>
       </section>
