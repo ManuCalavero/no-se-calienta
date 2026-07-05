@@ -104,7 +104,9 @@ function renderHomePage() {
   destroyChartIfAny()
 
   const appRoot = document.querySelector('#app')
-  const withData = spainStations.filter((station) => stationDataIndex.has(station.code)).length
+  const stationsWithData = spainStations.filter((station) => stationDataIndex.has(station.code))
+  const withData = stationsWithData.length
+  const stationsForHome = withData > 0 ? stationsWithData : spainStations
 
   appRoot.innerHTML = `
     <main class="layout">
@@ -116,6 +118,7 @@ function renderHomePage() {
             <p class="subtitle">
               Estaciones españolas geolocalizadas: ${spainStations.length}. Con datos históricos descargados: ${withData}.
             </p>
+            ${withData < spainStations.length ? `<p class="subtitle">Mostrando solo estaciones con datos locales para evitar errores de carga.</p>` : ''}
           </div>
         </div>
       </header>
@@ -127,12 +130,10 @@ function renderHomePage() {
       <section class="stations-panel">
         <h2 class="panel-title">Estaciones de España</h2>
         <ul class="station-list">
-          ${spainStations
+          ${stationsForHome
             .map((station) => {
-              const hasData = stationDataIndex.has(station.code)
               const href = stationPath(station.code)
-              const badge = hasData ? 'datos listos' : 'sin datos locales'
-              return `<li><a class="station-link" href="${href}" data-route="station" data-code="${station.code}">${station.name} (${station.code}) <span>${badge}</span></a></li>`
+              return `<li><a class="station-link" href="${href}" data-route="station" data-code="${station.code}">${station.name} (${station.code}) <span>datos listos</span></a></li>`
             })
             .join('')}
         </ul>
@@ -175,20 +176,22 @@ function initializeSpainMap() {
   )
   map.setMaxBounds(bounds)
 
-  spainStations.forEach((station) => {
+  const stationsForMap = spainStations.filter((station) => stationDataIndex.has(station.code))
+  const mapStations = stationsForMap.length ? stationsForMap : spainStations
+
+  mapStations.forEach((station) => {
     if (!Number.isFinite(station.latitude) || !Number.isFinite(station.longitude)) return
 
-    const hasData = stationDataIndex.has(station.code)
     const marker = L.circleMarker([station.latitude, station.longitude], {
-      radius: hasData ? 5 : 3.5,
-      color: hasData ? '#ff7c3a' : '#8b95a5',
-      fillColor: hasData ? '#ff7c3a' : '#8b95a5',
-      fillOpacity: hasData ? 0.9 : 0.55,
+      radius: 5,
+      color: '#ff7c3a',
+      fillColor: '#ff7c3a',
+      fillOpacity: 0.9,
       weight: 1,
     }).addTo(map)
 
     const popupLink = `<a href="${stationPath(station.code)}" data-route="station" data-code="${station.code}">${station.name} (${station.code})</a>`
-    const popupBody = `${popupLink}<br/><small>${hasData ? 'datos listos' : 'sin datos locales'}</small>`
+    const popupBody = `${popupLink}<br/><small>datos listos</small>`
 
     marker.bindPopup(popupBody)
     marker.on('popupopen', () => {
@@ -214,7 +217,8 @@ function initializeSpainMap() {
 
 async function renderStationPage(codeFromRoute) {
   const appRoot = document.querySelector('#app')
-  const stationOptions = spainStations
+  const stationsWithData = spainStations.filter((station) => stationDataIndex.has(station.code))
+  const stationOptions = stationsWithData.length ? stationsWithData : spainStations
   const hasStation = stationOptions.some((station) => station.code === codeFromRoute)
   const fallbackCode = stationDataIndex.get(currentStationCode)?.code || stationDataIndex.keys().next().value || DEFAULT_STATION_CODE
   currentStationCode = hasStation ? codeFromRoute : fallbackCode
@@ -234,9 +238,7 @@ async function renderStationPage(codeFromRoute) {
 
   stationSelect.innerHTML = stationOptions
     .map((station) => {
-      const hasLocalData = stationDataIndex.has(station.code)
-      const suffix = hasLocalData ? '' : ' · sin datos locales'
-      return `<option value="${station.code}">${station.name} (${station.code})${suffix}</option>`
+      return `<option value="${station.code}">${station.name} (${station.code})</option>`
     })
     .join('')
   stationSelect.value = currentStationCode
