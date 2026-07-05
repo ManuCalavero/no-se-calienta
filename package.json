@@ -9,13 +9,15 @@
     "preview": "vite preview",
     "scrape": "node scripts/scrape-weather.mjs",
     "discover:stations": "node scripts/discover-stations.mjs",
-    "scrape:all": "node scripts/scrape-weather.mjs --all"
+    "scrape:all": "node scripts/scrape-weather.mjs --all",
+    "build:spain-stations": "node scripts/build-spain-stations.mjs"
   },
   "devDependencies": {
     "vite": "^5.4.1"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
-    "cheerio": "^1.0.0-rc.12"
+    "cheerio": "^1.0.0-rc.12",
+    "leaflet": "^1.9.4"
   }
 }
