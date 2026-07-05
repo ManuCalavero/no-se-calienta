@@ -17,6 +17,7 @@ const rootDir = path.resolve(__dirname, '..')
 const publicDir = path.join(rootDir, 'public')
 const stationsDataDir = path.join(publicDir, 'stations', 'data')
 const stationIndexPath = path.join(publicDir, 'stations-index.json')
+const spainStationsPath = path.join(publicDir, 'stations-spain.json')
 const multiStationIndexPath = path.join(publicDir, 'weather-history-index.json')
 const legacySinglePath = path.join(publicDir, 'weather-history.json')
 
@@ -37,12 +38,22 @@ if (!stations.length) {
 console.log(`Estaciones a procesar: ${stations.length}`)
 
 const stationResults = []
+const existingIndex = await loadExistingWeatherIndex()
+
 for (let index = 0; index < stations.length; index += 1) {
   const station = stations[index]
   console.log(`\n[${index + 1}/${stations.length}] Scrapeando ${station.name} (${station.code})...`)
 
   try {
-    const payload = await scrapeStation(station, { startYear: START_YEAR, endYear, endMonth, todayIso })
+    const existingPayload = args.incremental ? await loadExistingStationPayload(station.code) : null
+    const payload = await scrapeStation(station, {
+      startYear: START_YEAR,
+      endYear,
+      endMonth,
+      todayIso,
+      existingPayload,
+      forceFull: args.full,
+    })
     const outputFile = `/stations/data/ws-${station.code}.json`
     const outputPath = path.join(publicDir, outputFile)
 
@@ -63,10 +74,20 @@ for (let index = 0; index < stations.length; index += 1) {
   }
 }
 
+const mergedStationsMap = new Map((existingIndex.stations || []).map((station) => [station.code, station]))
+for (const stationResult of stationResults) {
+  mergedStationsMap.set(stationResult.code, stationResult)
+}
+
+const mergedStations = Array.from(mergedStationsMap.values()).sort((a, b) => Number(a.code) - Number(b.code))
+
 const indexPayload = {
   generatedAt: new Date().toISOString(),
-  defaultStation: stationResults[0]?.code || DEFAULT_STATION_CODE,
-  stations: stationResults,
+  defaultStation:
+    mergedStationsMap.has(existingIndex.defaultStation)
+      ? existingIndex.defaultStation
+      : mergedStations[0]?.code || DEFAULT_STATION_CODE,
+  stations: mergedStations,
 }
 
 await fs.writeFile(multiStationIndexPath, JSON.stringify(indexPayload, null, 2), 'utf-8')
@@ -89,6 +110,12 @@ async function resolveStations(cliArgs) {
         name: cliArgs.name || `Estacion ${cliArgs.station}`,
       },
     ]
+  }
+
+  if (cliArgs.spain) {
+    const spainIndex = await loadSpainStationIndex()
+    const limited = cliArgs.limit > 0 ? spainIndex.slice(0, cliArgs.limit) : spainIndex
+    return limited
   }
 
   if (cliArgs.all) {
@@ -118,16 +145,77 @@ async function loadStationIndex() {
   }
 }
 
-async function scrapeStation(station, options) {
-  const { startYear, endYear: targetEndYear, endMonth: targetEndMonth, todayIso: todayLimit } = options
+async function loadSpainStationIndex() {
+  try {
+    const raw = await fs.readFile(spainStationsPath, 'utf-8')
+    const payload = JSON.parse(raw)
+    return (payload.stations || []).map((item) => ({
+      code: String(item.code),
+      name: item.name || `Estacion ${item.code}`,
+    }))
+  } catch {
+    throw new Error('Falta public/stations-spain.json. Ejecuta primero: npm run build:spain-stations')
+  }
+}
 
-  const byDay = {}
+async function loadExistingWeatherIndex() {
+  try {
+    const raw = await fs.readFile(multiStationIndexPath, 'utf-8')
+    const payload = JSON.parse(raw)
+    return {
+      defaultStation: payload.defaultStation || DEFAULT_STATION_CODE,
+      stations: Array.isArray(payload.stations) ? payload.stations : [],
+    }
+  } catch {
+    return {
+      defaultStation: DEFAULT_STATION_CODE,
+      stations: [],
+    }
+  }
+}
+
+async function loadExistingStationPayload(code) {
+  const dataPath = path.join(stationsDataDir, `ws-${code}.json`)
+  try {
+    const raw = await fs.readFile(dataPath, 'utf-8')
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+async function scrapeStation(station, options) {
+  const {
+    startYear,
+    endYear: targetEndYear,
+    endMonth: targetEndMonth,
+    todayIso: todayLimit,
+    existingPayload,
+    forceFull,
+  } = options
+
+  const scrapeWindow = resolveScrapeWindow({
+    startYear,
+    endYear: targetEndYear,
+    endMonth: targetEndMonth,
+    todayIso: todayLimit,
+    existingPayload,
+    forceFull,
+  })
+
+  if (scrapeWindow.skip && existingPayload) {
+    console.log(`Sin cambios: ${station.code} ya estaba al dia (${existingPayload.meta?.throughDate || todayLimit}).`)
+    return existingPayload
+  }
+
+  const byDay = cloneByDay(existingPayload?.byDay || {})
   const failures = []
 
-  for (let year = startYear; year <= targetEndYear; year += 1) {
+  for (let year = scrapeWindow.startYear; year <= targetEndYear; year += 1) {
     const maxMonth = year === targetEndYear ? targetEndMonth : 12
+    const firstMonth = year === scrapeWindow.startYear ? scrapeWindow.startMonth : 1
 
-    for (let month = 1; month <= maxMonth; month += 1) {
+    for (let month = firstMonth; month <= maxMonth; month += 1) {
       const url = `${BASE_URL}/${String(month).padStart(2, '0')}-${year}/ws-${station.code}.html`
 
       try {
@@ -140,7 +228,7 @@ async function scrapeStation(station, options) {
           const key = `${String(record.month).padStart(2, '0')}-${String(record.day).padStart(2, '0')}`
           if (!byDay[key]) byDay[key] = []
 
-          byDay[key].push({
+          upsertYearRecord(byDay[key], {
             year: record.year,
             tAvg: record.tAvg,
             tMax: record.tMax,
@@ -170,7 +258,7 @@ async function scrapeStation(station, options) {
       station: station.code,
       stationName: station.name,
       source: 'https://www.tutiempo.net',
-      startYear,
+      startYear: existingPayload?.meta?.startYear || startYear,
       endYear: targetEndYear,
       generatedAt: new Date().toISOString(),
       throughDate: todayLimit,
@@ -180,6 +268,61 @@ async function scrapeStation(station, options) {
     failures,
     byDay,
   }
+}
+
+function resolveScrapeWindow(options) {
+  const { startYear, endYear, endMonth, todayIso, existingPayload, forceFull } = options
+
+  if (forceFull || !existingPayload?.meta?.throughDate || !isIsoDate(existingPayload.meta.throughDate)) {
+    return {
+      startYear,
+      startMonth: 1,
+      skip: false,
+    }
+  }
+
+  const throughDate = existingPayload.meta.throughDate
+  if (throughDate >= todayIso) {
+    return {
+      startYear: endYear,
+      startMonth: endMonth,
+      skip: true,
+    }
+  }
+
+  const [year, month] = throughDate.split('-').map((part) => Number(part))
+  if (!Number.isInteger(year) || !Number.isInteger(month)) {
+    return {
+      startYear,
+      startMonth: 1,
+      skip: false,
+    }
+  }
+
+  return {
+    // Rescrape from the month of the latest stored day to handle partial month updates.
+    startYear: year,
+    startMonth: month,
+    skip: false,
+  }
+}
+
+function upsertYearRecord(series, entry) {
+  const existingIndex = series.findIndex((item) => item.year === entry.year)
+  if (existingIndex >= 0) {
+    series[existingIndex] = entry
+    return
+  }
+
+  series.push(entry)
+}
+
+function cloneByDay(byDay) {
+  const cloned = {}
+  for (const [key, records] of Object.entries(byDay)) {
+    cloned[key] = (records || []).map((record) => ({ ...record }))
+  }
+  return cloned
 }
 
 async function fetchWithRetry(url) {
@@ -264,6 +407,10 @@ function toIsoDate(date) {
   return `${year}-${month}-${day}`
 }
 
+function isIsoDate(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+}
+
 function delay(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
@@ -273,13 +420,22 @@ function delay(ms) {
 function parseArgs(argv) {
   const output = {
     all: false,
+    spain: false,
     station: '',
     name: '',
     limit: 0,
+    incremental: true,
+    full: false,
   }
 
   for (const arg of argv) {
     if (arg === '--all') output.all = true
+    if (arg === '--spain') output.spain = true
+    if (arg === '--full') {
+      output.full = true
+      output.incremental = false
+    }
+    if (arg === '--no-incremental') output.incremental = false
     if (arg.startsWith('--station=')) output.station = arg.split('=')[1]
     if (arg.startsWith('--name=')) output.name = decodeURIComponent(arg.split('=')[1])
     if (arg.startsWith('--limit=')) output.limit = Number.parseInt(arg.split('=')[1], 10) || 0

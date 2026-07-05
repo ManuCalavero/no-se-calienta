@@ -1,0 +1,72 @@
+name: Update Weather Data
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Update mode'
+        required: true
+        default: 'spain'
+        type: choice
+        options:
+          - station
+          - spain
+          - all
+      stationCode:
+        description: 'Station code (required when mode=station)'
+        required: false
+        default: '82210'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weather-data-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure Spain station index exists
+        run: npm run build:spain-stations
+
+      - name: Run station update
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'station' }}
+        run: node scripts/scrape-weather.mjs --station=${{ github.event.inputs.stationCode }}
+
+      - name: Run Spain update
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'spain') }}
+        run: npm run scrape:spain
+
+      - name: Run all stations update
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'all' }}
+        run: npm run scrape:all
+
+      - name: Commit and push updated datasets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet; then
+            echo "No weather data changes to commit"
+            exit 0
+          fi
+
+          git add public/weather-history-index.json public/weather-history.json public/stations/data public/stations-spain.json
+          git commit -m "chore(data): update weather datasets"
+          git push

@@ -8,8 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "scrape": "node scripts/scrape-weather.mjs",
+    "scrape:station": "node scripts/scrape-weather.mjs --station=82210",
     "discover:stations": "node scripts/discover-stations.mjs",
     "scrape:all": "node scripts/scrape-weather.mjs --all",
+    "scrape:spain": "node scripts/scrape-weather.mjs --spain",
+    "scrape:daily": "node scripts/scrape-weather.mjs --spain",
     "build:spain-stations": "node scripts/build-spain-stations.mjs"
   },
   "devDependencies": {

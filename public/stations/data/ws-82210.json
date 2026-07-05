@@ -1,56 +1,16 @@
 {
   "meta": {
     "station": "82210",
-    "stationName": "Madrid / Barajas",
+    "stationName": "Estacion 82210",
     "source": "https://www.tutiempo.net",
     "startYear": 1976,
     "endYear": 2026,
-    "generatedAt": "2026-07-02T16:44:09.919Z",
-    "throughDate": "2026-07-02",
+    "generatedAt": "2026-07-05T15:56:26.003Z",
+    "throughDate": "2026-07-05",
     "recordsCount": 18141,
-    "failedPages": 11
+    "failedPages": 1
   },
   "failures": [
-    {
-      "url": "https://www.tutiempo.net/clima/09-2025/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/10-2025/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/11-2025/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/12-2025/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/01-2026/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/02-2026/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/03-2026/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/04-2026/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/05-2026/ws-82210.html",
-      "message": "HTTP 404"
-    },
-    {
-      "url": "https://www.tutiempo.net/clima/06-2026/ws-82210.html",
-      "message": "HTTP 404"
-    },
     {
       "url": "https://www.tutiempo.net/clima/07-2026/ws-82210.html",
       "message": "HTTP 404"
