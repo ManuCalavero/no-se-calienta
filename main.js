@@ -1,4 +1,6 @@
 import './style.css'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
 import {
   BarController,
   BarElement,
@@ -27,277 +29,385 @@ Chart.register(
 )
 
 const START_YEAR = 1976
+const DEFAULT_STATION_CODE = '82210'
+const APP_BASE = normalizeBase(import.meta.env.BASE_URL)
 const today = new Date()
 const maxDate = toIsoDate(today)
-const DEFAULT_STATION_CODE = '82210'
 
 let chart
-let weatherData
-let stationCatalog = []
-let stationCode = DEFAULT_STATION_CODE
+let spainStations = []
+let stationDataIndex = new Map()
+let weatherData = null
+let currentStationCode = DEFAULT_STATION_CODE
 
-document.querySelector('#app').innerHTML = `
-  <main class="layout">
-    <header class="hero">
-      <div class="hero-top">
-        <div>
-          <p id="heroStation" class="eyebrow">No Se Calienta · Estacion ${DEFAULT_STATION_CODE}</p>
-          <h1>Evolucion climatica por dia del año</h1>
-          <p class="subtitle">
-            Compara la temperatura maxima, minima, media y la precipitacion del mismo dia
-            desde ${START_YEAR} hasta hoy.
-          </p>
-        </div>
-      </div>
+startApp()
 
-      <div class="hero-kpis">
-        <article class="hero-kpi">
-          <p class="kpi-label">Temperatura media actual</p>
-          <p id="heroCurrentAvg" class="kpi-value">--</p>
-          <p id="heroCurrentYear" class="kpi-meta">--</p>
-        </article>
-        <article class="hero-kpi">
-          <p class="kpi-label">Cambio frente al primer ano</p>
-          <p id="heroChangeAvg" class="kpi-value">--</p>
-          <p id="heroChangeRange" class="kpi-meta">--</p>
-        </article>
-      </div>
-    </header>
-
-    <section class="controls">
-      <div class="control-group">
-        <label for="stationSelect">Estacion</label>
-        <select id="stationSelect"></select>
-      </div>
-      <div class="control-group">
-        <label for="selectedDate">Fecha (por defecto, hoy)</label>
-        <input id="selectedDate" type="date" min="${START_YEAR}-01-01" max="${maxDate}" value="${maxDate}" />
-      </div>
-      <p id="selectionInfo" class="selection-info"></p>
-    </section>
-    <section class="chart-panel">
-      <canvas id="climateChart" aria-label="Grafico de evolucion anual" role="img"></canvas>
-    </section>
-
-    <section class="cards" id="summaryCards" aria-live="polite"></section>
-    
-    <section class="insights" id="insights"></section>
-  </main>
-`
-
-const dateInput = document.querySelector('#selectedDate')
-const stationSelect = document.querySelector('#stationSelect')
-const selectionInfo = document.querySelector('#selectionInfo')
-const summaryCards = document.querySelector('#summaryCards')
-const insights = document.querySelector('#insights')
-const heroStation = document.querySelector('#heroStation')
-const heroCurrentAvg = document.querySelector('#heroCurrentAvg')
-const heroCurrentYear = document.querySelector('#heroCurrentYear')
-const heroChangeAvg = document.querySelector('#heroChangeAvg')
-const heroChangeRange = document.querySelector('#heroChangeRange')
-
-bootstrap().catch((error) => {
-  selectionInfo.textContent = 'No se pudo cargar el dataset.'
-  insights.innerHTML = `
-    <article class="insight error">
-      <h2>Error al cargar datos</h2>
-      <p>${error.message}</p>
-      <p>Ejecuta <code>npm run scrape</code> para generar <code>public/weather-history.json</code>.</p>
-    </article>
-  `
-})
+async function startApp() {
+  await bootstrap()
+}
 
 async function bootstrap() {
-  await loadStationCatalog()
-  await loadStationData(stationCode)
+  const appRoot = document.querySelector('#app')
+  if (!appRoot) return
 
-  stationSelect.addEventListener('change', async () => {
-    stationCode = stationSelect.value
-    await loadStationData(stationCode)
-    renderForDate(dateInput.value)
+  try {
+    await loadCatalogs()
+  } catch (error) {
+    appRoot.innerHTML = `<main class="layout"><section class="insight error"><h2>Error de carga</h2><p>${error.message}</p></section></main>`
+    return
+  }
+
+  window.addEventListener('popstate', () => {
+    renderRoute()
+  })
+
+  renderRoute()
+}
+
+async function loadCatalogs() {
+  const [spainResponse, dataIndexResponse] = await Promise.all([
+    fetch(assetPath('/stations-spain.json'), { cache: 'no-store' }),
+    fetch(assetPath('/weather-history-index.json'), { cache: 'no-store' }),
+  ])
+
+  if (!spainResponse.ok) {
+    throw new Error('Falta public/stations-spain.json. Ejecuta npm run build:spain-stations.')
+  }
+
+  const spainPayload = await spainResponse.json()
+  spainStations = (spainPayload.stations || []).map((station) => ({
+    code: String(station.code),
+    name: station.name || `Estacion ${station.code}`,
+    latitude: Number(station.latitude),
+    longitude: Number(station.longitude),
+  }))
+
+  if (dataIndexResponse.ok) {
+    const dataIndexPayload = await dataIndexResponse.json()
+    stationDataIndex = new Map((dataIndexPayload.stations || []).map((station) => [station.code, station]))
+    currentStationCode = dataIndexPayload.defaultStation || currentStationCode
+  }
+}
+
+function renderRoute() {
+  const route = parseRoute()
+
+  if (route.view === 'station') {
+    renderStationPage(route.code)
+    return
+  }
+
+  renderHomePage()
+}
+
+function renderHomePage() {
+  destroyChartIfAny()
+
+  const appRoot = document.querySelector('#app')
+  const withData = spainStations.filter((station) => stationDataIndex.has(station.code)).length
+
+  appRoot.innerHTML = `
+    <main class="layout">
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <p class="eyebrow">No Se Calienta · Mapa de estaciones de España</p>
+            <h1>Selecciona una estación en el mapa</h1>
+            <p class="subtitle">
+              Estaciones españolas geolocalizadas: ${spainStations.length}. Con datos históricos descargados: ${withData}.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <section class="map-shell">
+        <div id="spainMap" class="spain-map" role="img" aria-label="Mapa de estaciones meteorológicas de España"></div>
+      </section>
+
+      <section class="stations-panel">
+        <h2 class="panel-title">Estaciones de España</h2>
+        <ul class="station-list">
+          ${spainStations
+            .map((station) => {
+              const hasData = stationDataIndex.has(station.code)
+              const href = stationPath(station.code)
+              const badge = hasData ? 'datos listos' : 'sin datos locales'
+              return `<li><a class="station-link" href="${href}" data-route="station" data-code="${station.code}">${station.name} (${station.code}) <span>${badge}</span></a></li>`
+            })
+            .join('')}
+        </ul>
+      </section>
+    </main>
+  `
+
+  setupHomeInteractions()
+  initializeSpainMap()
+}
+
+function setupHomeInteractions() {
+  document.querySelectorAll('[data-route="station"]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      const code = event.currentTarget?.getAttribute('data-code')
+      if (!code) return
+      navigateToStation(code)
+    })
+  })
+}
+
+function initializeSpainMap() {
+  const mapContainer = document.querySelector('#spainMap')
+  if (!mapContainer) return
+
+  const map = L.map(mapContainer, {
+    zoomControl: true,
+    minZoom: 5,
+    maxZoom: 10,
+  }).setView([40.3, -3.7], 6)
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map)
+
+  const bounds = L.latLngBounds(
+    [35.5, -10.5],
+    [44.7, 4.8],
+  )
+  map.setMaxBounds(bounds)
+
+  spainStations.forEach((station) => {
+    if (!Number.isFinite(station.latitude) || !Number.isFinite(station.longitude)) return
+
+    const hasData = stationDataIndex.has(station.code)
+    const marker = L.circleMarker([station.latitude, station.longitude], {
+      radius: hasData ? 5 : 3.5,
+      color: hasData ? '#ff7c3a' : '#8b95a5',
+      fillColor: hasData ? '#ff7c3a' : '#8b95a5',
+      fillOpacity: hasData ? 0.9 : 0.55,
+      weight: 1,
+    }).addTo(map)
+
+    const popupLink = `<a href="${stationPath(station.code)}" data-route="station" data-code="${station.code}">${station.name} (${station.code})</a>`
+    const popupBody = `${popupLink}<br/><small>${hasData ? 'datos listos' : 'sin datos locales'}</small>`
+
+    marker.bindPopup(popupBody)
+    marker.on('popupopen', () => {
+      const popupNode = marker.getPopup()?.getElement()
+      if (!popupNode) return
+
+      popupNode.querySelectorAll('[data-route="station"]').forEach((anchor) => {
+        anchor.addEventListener('click', (event) => {
+          event.preventDefault()
+          const code = event.currentTarget?.getAttribute('data-code')
+          if (!code) return
+          map.closePopup()
+          navigateToStation(code)
+        })
+      })
+    })
+  })
+
+  setTimeout(() => {
+    map.invalidateSize()
+  }, 0)
+}
+
+async function renderStationPage(codeFromRoute) {
+  const appRoot = document.querySelector('#app')
+  const stationOptions = spainStations
+  const hasStation = stationOptions.some((station) => station.code === codeFromRoute)
+  const fallbackCode = stationDataIndex.get(currentStationCode)?.code || stationDataIndex.keys().next().value || DEFAULT_STATION_CODE
+  currentStationCode = hasStation ? codeFromRoute : fallbackCode
+
+  appRoot.innerHTML = stationPageTemplate(currentStationCode)
+
+  const dateInput = document.querySelector('#selectedDate')
+  const stationSelect = document.querySelector('#stationSelect')
+  const selectionInfo = document.querySelector('#selectionInfo')
+  const summaryCards = document.querySelector('#summaryCards')
+  const insights = document.querySelector('#insights')
+  const heroStation = document.querySelector('#heroStation')
+  const heroCurrentAvg = document.querySelector('#heroCurrentAvg')
+  const heroCurrentYear = document.querySelector('#heroCurrentYear')
+  const heroChangeAvg = document.querySelector('#heroChangeAvg')
+  const heroChangeRange = document.querySelector('#heroChangeRange')
+
+  stationSelect.innerHTML = stationOptions
+    .map((station) => {
+      const hasLocalData = stationDataIndex.has(station.code)
+      const suffix = hasLocalData ? '' : ' · sin datos locales'
+      return `<option value="${station.code}">${station.name} (${station.code})${suffix}</option>`
+    })
+    .join('')
+  stationSelect.value = currentStationCode
+
+  document.querySelector('#backHome')?.addEventListener('click', (event) => {
+    event.preventDefault()
+    navigateToHome()
+  })
+
+  stationSelect.addEventListener('change', () => {
+    const selected = stationSelect.value
+    navigateToStation(selected)
   })
 
   dateInput.addEventListener('change', () => {
     renderForDate(dateInput.value)
   })
 
-  renderForDate(dateInput.value)
-}
-
-async function loadStationCatalog() {
-  stationCatalog = []
-
-  let discovered = []
-  let datasets = []
-  let defaultFromDataset = ''
-
-  try {
-    const discoveredResponse = await fetch('/stations-index.json', { cache: 'no-store' })
-    if (discoveredResponse.ok) {
-      const discoveredPayload = await discoveredResponse.json()
-      discovered = (discoveredPayload.stations || []).map((station) => ({
-        code: station.code,
-        name: station.name || `Estacion ${station.code}`,
-      }))
-    }
-  } catch {
-    // Ignore and fallback below.
-  }
-
-  try {
-    const dataIndexResponse = await fetch('/weather-history-index.json', { cache: 'no-store' })
-    if (dataIndexResponse.ok) {
-      const dataIndexPayload = await dataIndexResponse.json()
-      datasets = dataIndexPayload.stations || []
-      defaultFromDataset = dataIndexPayload.defaultStation || ''
-    }
-  } catch {
-    // Ignore and fallback below.
-  }
-
-  const datasetByCode = new Map(
-    datasets.map((station) => [station.code, { file: station.file, recordsCount: station.recordsCount }]),
-  )
-
-  if (discovered.length) {
-    stationCatalog = discovered.map((station) => {
-      const knownDataset = datasetByCode.get(station.code)
-      return {
-        ...station,
-        file: knownDataset?.file || `/stations/data/ws-${station.code}.json`,
-        hasLocalData: Boolean(knownDataset),
-      }
-    })
-  } else if (datasets.length) {
-    stationCatalog = datasets.map((station) => ({
-      code: station.code,
-      name: station.name || `Estacion ${station.code}`,
-      file: station.file || `/stations/data/ws-${station.code}.json`,
-      hasLocalData: true,
-    }))
-  } else {
-    stationCatalog = [
-      {
-        code: DEFAULT_STATION_CODE,
-        name: 'Madrid / Barajas',
-        file: '/weather-history.json',
-        hasLocalData: true,
-      },
-    ]
-  }
-
-  const firstWithData = stationCatalog.find((station) => station.hasLocalData)
-  stationCode =
-    defaultFromDataset || firstWithData?.code || stationCatalog[0]?.code || DEFAULT_STATION_CODE
-
-  stationSelect.innerHTML = stationCatalog
-    .map((station) => {
-      const suffix = station.hasLocalData ? '' : ' · sin datos locales'
-      return `<option value="${station.code}">${station.name} (${station.code})${suffix}</option>`
-    })
-    .join('')
-  stationSelect.value = stationCode
-}
-
-async function loadStationData(code) {
-  const station = stationCatalog.find((item) => item.code === code)
-  if (!station) {
-    throw new Error(`No se encontro la estacion ${code}.`)
-  }
-
-  const filePath = station.file || `/stations/data/ws-${station.code}.json`
-  const response = await fetch(filePath, { cache: 'no-store' })
-
-  if (!response.ok) {
-    throw new Error(
-      `No hay datos locales para ${station.name} (${station.code}). Ejecuta scrape para esa estacion o usa npm run scrape:all.`,
-    )
-  }
-
-  weatherData = await response.json()
-  heroStation.textContent = `No Se Calienta · ${station.name} · Estacion ${station.code}`
-}
-
-function renderForDate(isoDate) {
-  const key = isoDate.slice(5)
-  const series = (weatherData.byDay[key] || []).slice().sort((a, b) => a.year - b.year)
-
-  const dateLabel = formatDateWithoutYear(isoDate)
-  selectionInfo.textContent = `${dateLabel} · ${series.length} anos con datos disponibles`
-
-  if (!series.length) {
+  function renderError(message) {
+    selectionInfo.textContent = 'No se pudo cargar el dataset de esta estación.'
     summaryCards.innerHTML = ''
     insights.innerHTML = `
       <article class="insight error">
-        <h2>Sin registros para esta fecha</h2>
-        <p>Prueba con otro dia. En fechas especiales (como 29 de febrero) hay menos anos disponibles.</p>
+        <h2>Sin datos locales</h2>
+        <p>${message}</p>
+        <p>Para descargar más estaciones, ejecuta <code>npm run scrape:all</code>.</p>
       </article>
     `
+    heroCurrentAvg.textContent = '--'
+    heroCurrentYear.textContent = '--'
+    heroChangeAvg.textContent = '--'
+    heroChangeRange.textContent = '--'
+    heroChangeAvg.className = 'kpi-value'
+    destroyChartIfAny()
+  }
 
-    if (chart) {
-      chart.destroy()
-      chart = undefined
-    }
+  const selectedStation = stationOptions.find((station) => station.code === currentStationCode)
+  const stationDisplayName = selectedStation?.name || `Estacion ${currentStationCode}`
+  heroStation.textContent = `No Se Calienta · ${stationDisplayName} · Estacion ${currentStationCode}`
+
+  try {
+    weatherData = await loadStationWeatherData(currentStationCode)
+  } catch (error) {
+    renderError(error.message)
     return
   }
 
-  const stats = buildStats(series)
-  renderSummaryCards(stats, dateLabel)
-  renderInsights(stats, dateLabel)
-  renderChart(series, dateLabel)
+  renderForDate(dateInput.value)
+
+  function renderForDate(isoDate) {
+    const key = isoDate.slice(5)
+    const series = (weatherData.byDay[key] || []).slice().sort((a, b) => a.year - b.year)
+
+    const dateLabel = formatDateWithoutYear(isoDate)
+    selectionInfo.textContent = `${dateLabel} · ${series.length} anos con datos disponibles`
+
+    if (!series.length) {
+      summaryCards.innerHTML = ''
+      insights.innerHTML = `
+        <article class="insight error">
+          <h2>Sin registros para esta fecha</h2>
+          <p>Prueba con otro día. En fechas especiales (como 29 de febrero) hay menos años disponibles.</p>
+        </article>
+      `
+      destroyChartIfAny()
+      return
+    }
+
+    const stats = buildStats(series)
+    const diffAvg = stats.lastAvg !== null && stats.firstAvg !== null ? (stats.lastAvg - stats.firstAvg).toFixed(1) : 'n/d'
+    const diffSign = typeof diffAvg === 'string' && diffAvg !== 'n/d' ? Number(diffAvg) : null
+
+    heroCurrentAvg.textContent = `${formatNumber(stats.lastAvg)} °C`
+    heroCurrentYear.textContent = `Ano ${stats.lastYear}`
+    heroChangeAvg.textContent = `${diffSign !== null && diffSign > 0 ? '+' : ''}${diffAvg} °C`
+    heroChangeAvg.className = `kpi-value ${diffSign !== null && diffSign > 0 ? 'hot' : 'cold'}`
+    heroChangeRange.textContent = `${stats.firstYear} -> ${stats.lastYear}`
+
+    summaryCards.innerHTML = `
+      <article class="card">
+        <h2>Media ${dateLabel}</h2>
+        <p class="value">${formatNumber(stats.lastAvg)} °C</p>
+        <p class="meta">Ultimo ano: ${stats.lastYear}</p>
+      </article>
+      <article class="card">
+        <h2>Cambio desde ${stats.firstYear}</h2>
+        <p class="value ${diffSign !== null && diffSign > 0 ? 'hot' : 'cold'}">${diffAvg} °C</p>
+        <p class="meta">Comparado con ${stats.firstYear}</p>
+      </article>
+      <article class="card">
+        <h2>Precipitacion (ultimo ano)</h2>
+        <p class="value">${formatNumber(stats.lastPrecip)} mm</p>
+        <p class="meta">${stats.lastYear}</p>
+      </article>
+      <article class="card">
+        <h2>Tendencia temperatura media</h2>
+        <p class="value ${stats.slope > 0 ? 'hot' : 'cold'}">${stats.slope > 0 ? '+' : ''}${stats.slope.toFixed(3)} °C/ano</p>
+        <p class="meta">Regresion lineal ${stats.firstYear}-${stats.lastYear}</p>
+      </article>
+    `
+
+    insights.innerHTML = `
+      <article class="insight">
+        <h2>Lectura rapida</h2>
+        <p>
+          Para el ${dateLabel}, la temperatura media pasa de
+          <strong>${formatNumber(stats.firstAvg)} °C</strong> en ${stats.firstYear}
+          a <strong>${formatNumber(stats.lastAvg)} °C</strong> en ${stats.lastYear}.
+        </p>
+        <p>
+          Maxima historica: <strong>${formatNumber(stats.maxOfMax)} °C</strong>.
+          Minima historica: <strong>${formatNumber(stats.minOfMin)} °C</strong>.
+        </p>
+        <p>
+          Precipitacion media para este dia: <strong>${formatNumber(stats.meanPrecip)} mm</strong>.
+        </p>
+      </article>
+    `
+
+    renderChart(series, dateLabel)
+  }
 }
 
-function renderSummaryCards(stats, dateLabel) {
-  const diffAvg = stats.lastAvg !== null && stats.firstAvg !== null ? (stats.lastAvg - stats.firstAvg).toFixed(1) : 'n/d'
-  const diffSign = typeof diffAvg === 'string' && diffAvg !== 'n/d' ? Number(diffAvg) : null
+function stationPageTemplate(code) {
+  return `
+    <main class="layout">
+      <header class="hero">
+        <div class="hero-top">
+          <div>
+            <p id="heroStation" class="eyebrow">No Se Calienta · Estacion ${code}</p>
+            <h1>Evolucion climatica por dia del año</h1>
+            <p class="subtitle">
+              Compara la temperatura maxima, minima, media y la precipitacion del mismo dia desde ${START_YEAR} hasta hoy.
+            </p>
+          </div>
+          <a id="backHome" class="back-home" href="${appPath('/')}">Volver al mapa</a>
+        </div>
 
-  heroCurrentAvg.textContent = `${formatNumber(stats.lastAvg)} °C`
-  heroCurrentYear.textContent = `Ano ${stats.lastYear}`
-  heroChangeAvg.textContent = `${diffSign !== null && diffSign > 0 ? '+' : ''}${diffAvg} °C`
-  heroChangeAvg.className = `kpi-value ${diffSign !== null && diffSign > 0 ? 'hot' : 'cold'}`
-  heroChangeRange.textContent = `${stats.firstYear} -> ${stats.lastYear}`
+        <div class="hero-kpis">
+          <article class="hero-kpi">
+            <p class="kpi-label">Temperatura media actual</p>
+            <p id="heroCurrentAvg" class="kpi-value">--</p>
+            <p id="heroCurrentYear" class="kpi-meta">--</p>
+          </article>
+          <article class="hero-kpi">
+            <p class="kpi-label">Cambio frente al primer ano</p>
+            <p id="heroChangeAvg" class="kpi-value">--</p>
+            <p id="heroChangeRange" class="kpi-meta">--</p>
+          </article>
+        </div>
+      </header>
 
-  summaryCards.innerHTML = `
-    <article class="card">
-      <h2>Media ${dateLabel}</h2>
-      <p class="value">${formatNumber(stats.lastAvg)} °C</p>
-      <p class="meta">Ultimo ano: ${stats.lastYear}</p>
-    </article>
-    <article class="card">
-      <h2>Cambio desde ${stats.firstYear}</h2>
-      <p class="value ${diffSign !== null && diffSign > 0 ? 'hot' : 'cold'}">${diffAvg} °C</p>
-      <p class="meta">Comparado con ${stats.firstYear}</p>
-    </article>
-    <article class="card">
-      <h2>Precipitacion (ultimo ano)</h2>
-      <p class="value">${formatNumber(stats.lastPrecip)} mm</p>
-      <p class="meta">${stats.lastYear}</p>
-    </article>
-    <article class="card">
-      <h2>Tendencia temperatura media</h2>
-      <p class="value ${stats.slope > 0 ? 'hot' : 'cold'}">${stats.slope > 0 ? '+' : ''}${stats.slope.toFixed(3)} °C/ano</p>
-      <p class="meta">Regresion lineal ${stats.firstYear}-${stats.lastYear}</p>
-    </article>
-  `
-}
+      <section class="controls">
+        <div class="control-group">
+          <label for="stationSelect">Estacion</label>
+          <select id="stationSelect"></select>
+        </div>
+        <div class="control-group">
+          <label for="selectedDate">Fecha (por defecto, hoy)</label>
+          <input id="selectedDate" type="date" min="${START_YEAR}-01-01" max="${maxDate}" value="${maxDate}" />
+        </div>
+        <p id="selectionInfo" class="selection-info"></p>
+      </section>
 
-function renderInsights(stats, dateLabel) {
-  insights.innerHTML = `
-    <article class="insight">
-      <h2>Lectura rapida</h2>
-      <p>
-        Para el ${dateLabel}, la temperatura media pasa de
-        <strong>${formatNumber(stats.firstAvg)} °C</strong> en ${stats.firstYear}
-        a <strong>${formatNumber(stats.lastAvg)} °C</strong> en ${stats.lastYear}.
-      </p>
-      <p>
-        Maxima historica: <strong>${formatNumber(stats.maxOfMax)} °C</strong>.
-        Minima historica: <strong>${formatNumber(stats.minOfMin)} °C</strong>.
-      </p>
-      <p>
-        Precipitacion media para este dia: <strong>${formatNumber(stats.meanPrecip)} mm</strong>.
-      </p>
-    </article>
+      <section class="chart-panel">
+        <canvas id="climateChart" aria-label="Grafico de evolucion anual" role="img"></canvas>
+      </section>
+
+      <section class="cards" id="summaryCards" aria-live="polite"></section>
+      <section class="insights" id="insights"></section>
+    </main>
   `
 }
 
@@ -430,10 +540,7 @@ function renderChart(series, dateLabel) {
     },
   }
 
-  if (chart) {
-    chart.destroy()
-  }
-
+  destroyChartIfAny()
   chart = new Chart(document.querySelector('#climateChart'), config)
 }
 
@@ -456,6 +563,97 @@ function buildStats(series) {
     maxOfMax,
     minOfMin,
     slope,
+  }
+}
+
+async function loadStationWeatherData(code) {
+  const localDataset = stationDataIndex.get(code)
+  if (!localDataset) {
+    throw new Error(`La estación ${code} no tiene dataset local todavía.`)
+  }
+
+  const datasetPath = localDataset.file || `/stations/data/ws-${code}.json`
+  const response = await fetch(assetPath(datasetPath), { cache: 'no-store' })
+  if (!response.ok) {
+    throw new Error(`No se pudo cargar el dataset local de la estación ${code}.`)
+  }
+
+  return await response.json()
+}
+
+function navigateToStation(code) {
+  currentStationCode = code
+  pushRoute(stationPath(code))
+  renderRoute()
+}
+
+function navigateToHome() {
+  pushRoute(appPath('/'))
+  renderRoute()
+}
+
+function stationPath(code) {
+  return appPath(`/estacion/${code}`)
+}
+
+function parseRoute() {
+  const pathname = window.location.pathname.replace(/\/+$/, '') || '/'
+  const localPath = stripBase(pathname, APP_BASE)
+
+  if (localPath.startsWith('/estacion/')) {
+    const code = localPath.split('/')[2]
+    return {
+      view: 'station',
+      code: code || DEFAULT_STATION_CODE,
+    }
+  }
+
+  if (localPath === '/estacion') {
+    return { view: 'station', code: currentStationCode }
+  }
+
+  return { view: 'home' }
+}
+
+function pushRoute(path) {
+  if (window.location.pathname === path) return
+  window.history.pushState({}, '', path)
+}
+
+function appPath(path) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return APP_BASE ? `${APP_BASE}${normalizedPath}` : normalizedPath
+}
+
+function stripBase(pathname, base) {
+  if (!base) return pathname
+  if (pathname.startsWith(base)) {
+    const stripped = pathname.slice(base.length)
+    return stripped || '/'
+  }
+  return pathname
+}
+
+function normalizeBase(baseUrl) {
+  if (!baseUrl || baseUrl === '/') return ''
+  return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+}
+
+function assetPath(path) {
+  if (!path) return appPath('/')
+
+  // Keep absolute URLs untouched.
+  if (/^https?:\/\//i.test(path)) {
+    return path
+  }
+
+  return appPath(path)
+}
+
+function destroyChartIfAny() {
+  if (chart) {
+    chart.destroy()
+    chart = undefined
   }
 }
 
