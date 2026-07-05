@@ -704,6 +704,10 @@ function toIsoDate(date) {
   return `${year}-${month}-${day}`
 }
 
+function isIsoDate(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+}
+
 function pickPreferredIsoDate(dataset, todayIso) {
   const throughDate = dataset?.meta?.throughDate
   const cappedIso = isIsoDate(throughDate) && throughDate < todayIso ? throughDate : todayIso
