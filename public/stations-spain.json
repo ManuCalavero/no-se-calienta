@@ -1,0 +1,694 @@
+{
+  "generatedAt": "2026-07-02T16:57:24.489Z",
+  "source": "https://www.tutiempo.net",
+  "totalStationsReviewed": 4512,
+  "totalSpainStations": 98,
+  "stations": [
+    {
+      "code": "80010",
+      "name": "LA CORUNA",
+      "latitude": 43.36,
+      "longitude": -8.41,
+      "url": "https://www.tutiempo.net/clima/ws-80010.html"
+    },
+    {
+      "code": "80020",
+      "name": "A Coruña / Alvedro",
+      "latitude": 43.3,
+      "longitude": -8.38,
+      "url": "https://www.tutiempo.net/clima/ws-80020.html"
+    },
+    {
+      "code": "80030",
+      "name": "MONTEVENTOSO",
+      "latitude": 43.48,
+      "longitude": -8.31,
+      "url": "https://www.tutiempo.net/clima/ws-80030.html"
+    },
+    {
+      "code": "80050",
+      "name": "EL FERROL",
+      "latitude": 43.48,
+      "longitude": -8.23,
+      "url": "https://www.tutiempo.net/clima/ws-80050.html"
+    },
+    {
+      "code": "80080",
+      "name": "LUGO/ROZAS",
+      "latitude": 43.11,
+      "longitude": -7.45,
+      "url": "https://www.tutiempo.net/clima/ws-80080.html"
+    },
+    {
+      "code": "80110",
+      "name": "Asturias / Aviles",
+      "latitude": 43.55,
+      "longitude": -6.03,
+      "url": "https://www.tutiempo.net/clima/ws-80110.html"
+    },
+    {
+      "code": "80140",
+      "name": "GIJON-MUSEL",
+      "latitude": 43.56,
+      "longitude": -5.63,
+      "url": "https://www.tutiempo.net/clima/ws-80140.html"
+    },
+    {
+      "code": "80141",
+      "name": "CIUDAD REAL",
+      "latitude": 38.98,
+      "longitude": -3.91,
+      "url": "https://www.tutiempo.net/clima/ws-80141.html"
+    },
+    {
+      "code": "80142",
+      "name": "BARDENAS REALES",
+      "latitude": 42.2,
+      "longitude": -1.45,
+      "url": "https://www.tutiempo.net/clima/ws-80142.html"
+    },
+    {
+      "code": "80144",
+      "name": "ARMILLA",
+      "latitude": 37.13,
+      "longitude": -3.63,
+      "url": "https://www.tutiempo.net/clima/ws-80144.html"
+    },
+    {
+      "code": "80150",
+      "name": "OVIEDO",
+      "latitude": 43.35,
+      "longitude": -5.86,
+      "url": "https://www.tutiempo.net/clima/ws-80150.html"
+    },
+    {
+      "code": "80250",
+      "name": "Bilbao / Sondica",
+      "latitude": 43.3,
+      "longitude": -2.93,
+      "url": "https://www.tutiempo.net/clima/ws-80250.html"
+    },
+    {
+      "code": "80430",
+      "name": "MARIN",
+      "latitude": 42.4,
+      "longitude": -8.7,
+      "url": "https://www.tutiempo.net/clima/ws-80430.html"
+    },
+    {
+      "code": "80440",
+      "name": "PONTEVEDRA",
+      "latitude": 42.43,
+      "longitude": -8.65,
+      "url": "https://www.tutiempo.net/clima/ws-80440.html"
+    },
+    {
+      "code": "80480",
+      "name": "ORENSE",
+      "latitude": 42.33,
+      "longitude": -7.86,
+      "url": "https://www.tutiempo.net/clima/ws-80480.html"
+    },
+    {
+      "code": "80530",
+      "name": "PONFERRADA",
+      "latitude": 42.56,
+      "longitude": -6.58,
+      "url": "https://www.tutiempo.net/clima/ws-80530.html"
+    },
+    {
+      "code": "80550",
+      "name": "Leon / Virgen Del Camino",
+      "latitude": 42.58,
+      "longitude": -5.65,
+      "url": "https://www.tutiempo.net/clima/ws-80550.html"
+    },
+    {
+      "code": "80710",
+      "name": "PALENCIA",
+      "latitude": 42.01,
+      "longitude": -4.53,
+      "url": "https://www.tutiempo.net/clima/ws-80710.html"
+    },
+    {
+      "code": "80720",
+      "name": "PALENCIA-AUTILLA PI",
+      "latitude": 42,
+      "longitude": -4.6,
+      "url": "https://www.tutiempo.net/clima/ws-80720.html"
+    },
+    {
+      "code": "80750",
+      "name": "Burgos / Villafria",
+      "latitude": 42.35,
+      "longitude": -3.63,
+      "url": "https://www.tutiempo.net/clima/ws-80750.html"
+    },
+    {
+      "code": "80760",
+      "name": "BURGOS-IN-CASTILLA",
+      "latitude": 42.33,
+      "longitude": -3.7,
+      "url": "https://www.tutiempo.net/clima/ws-80760.html"
+    },
+    {
+      "code": "80830",
+      "name": "LOGRONO",
+      "latitude": 42.48,
+      "longitude": -2.45,
+      "url": "https://www.tutiempo.net/clima/ws-80830.html"
+    },
+    {
+      "code": "80840",
+      "name": "Logroño / Agoncillo",
+      "latitude": 42.45,
+      "longitude": -2.33,
+      "url": "https://www.tutiempo.net/clima/ws-80840.html"
+    },
+    {
+      "code": "80850",
+      "name": "Pamplona / Noain",
+      "latitude": 42.76,
+      "longitude": -1.63,
+      "url": "https://www.tutiempo.net/clima/ws-80850.html"
+    },
+    {
+      "code": "80860",
+      "name": "PAMPLONA-IN-NAVARRA",
+      "latitude": 42.81,
+      "longitude": -1.66,
+      "url": "https://www.tutiempo.net/clima/ws-80860.html"
+    },
+    {
+      "code": "80870",
+      "name": "BARDENAS REALES",
+      "latitude": 42.2,
+      "longitude": -1.45,
+      "url": "https://www.tutiempo.net/clima/ws-80870.html"
+    },
+    {
+      "code": "80910",
+      "name": "JACA",
+      "latitude": 42.56,
+      "longitude": -3.13,
+      "url": "https://www.tutiempo.net/clima/ws-80910.html"
+    },
+    {
+      "code": "80940",
+      "name": "HUESCA/MONFLORITE",
+      "latitude": 42.08,
+      "longitude": -0.33,
+      "url": "https://www.tutiempo.net/clima/ws-80940.html"
+    },
+    {
+      "code": "81170",
+      "name": "LA MOLINA",
+      "latitude": 42.33,
+      "longitude": 1.93,
+      "url": "https://www.tutiempo.net/clima/ws-81170.html"
+    },
+    {
+      "code": "81570",
+      "name": "DAROCA",
+      "latitude": 41.11,
+      "longitude": -1.41,
+      "url": "https://www.tutiempo.net/clima/ws-81570.html"
+    },
+    {
+      "code": "81710",
+      "name": "LERIDA",
+      "latitude": 41.63,
+      "longitude": 0.63,
+      "url": "https://www.tutiempo.net/clima/ws-81710.html"
+    },
+    {
+      "code": "81750",
+      "name": "Reus / Aeropuerto",
+      "latitude": 41.15,
+      "longitude": 1.16,
+      "url": "https://www.tutiempo.net/clima/ws-81750.html"
+    },
+    {
+      "code": "81763",
+      "name": "Sabadell",
+      "latitude": 41.51,
+      "longitude": 2.1,
+      "url": "https://www.tutiempo.net/clima/ws-81763.html"
+    },
+    {
+      "code": "81800",
+      "name": "BARCELONA CITY",
+      "latitude": 41.41,
+      "longitude": 2.15,
+      "url": "https://www.tutiempo.net/clima/ws-81800.html"
+    },
+    {
+      "code": "81810",
+      "name": "Barcelona / Aeropuerto",
+      "latitude": 41.28,
+      "longitude": 2.06,
+      "url": "https://www.tutiempo.net/clima/ws-81810.html"
+    },
+    {
+      "code": "81820",
+      "name": "MONTSENY MTN RANGE",
+      "latitude": 41.78,
+      "longitude": 2.43,
+      "url": "https://www.tutiempo.net/clima/ws-81820.html"
+    },
+    {
+      "code": "81830",
+      "name": "GERONA-IN-CATALUNA",
+      "latitude": 41.98,
+      "longitude": 2.83,
+      "url": "https://www.tutiempo.net/clima/ws-81830.html"
+    },
+    {
+      "code": "81840",
+      "name": "Gerona / Costa Brava",
+      "latitude": 41.9,
+      "longitude": 2.76,
+      "url": "https://www.tutiempo.net/clima/ws-81840.html"
+    },
+    {
+      "code": "82010",
+      "name": "SALAMANCA-IN-LEON",
+      "latitude": 40.95,
+      "longitude": -5.65,
+      "url": "https://www.tutiempo.net/clima/ws-82010.html"
+    },
+    {
+      "code": "82020",
+      "name": "Salamanca / Matacan",
+      "latitude": 40.95,
+      "longitude": -5.5,
+      "url": "https://www.tutiempo.net/clima/ws-82020.html"
+    },
+    {
+      "code": "82100",
+      "name": "AVILA",
+      "latitude": 40.65,
+      "longitude": -4.51,
+      "url": "https://www.tutiempo.net/clima/ws-82100.html"
+    },
+    {
+      "code": "82150",
+      "name": "NAVACERRADA",
+      "latitude": 40.78,
+      "longitude": -4.01,
+      "url": "https://www.tutiempo.net/clima/ws-82150.html"
+    },
+    {
+      "code": "82190",
+      "name": "Madrid / Colmenar",
+      "latitude": 40.65,
+      "longitude": -3.73,
+      "url": "https://www.tutiempo.net/clima/ws-82190.html"
+    },
+    {
+      "code": "82200",
+      "name": "MADRID/C. UNIVERSIT",
+      "latitude": 40.45,
+      "longitude": -3.71,
+      "url": "https://www.tutiempo.net/clima/ws-82200.html"
+    },
+    {
+      "code": "82204",
+      "name": "MADRI-COLMENAR",
+      "latitude": 40.65,
+      "longitude": -3.73,
+      "url": "https://www.tutiempo.net/clima/ws-82204.html"
+    },
+    {
+      "code": "82210",
+      "name": "Madrid - Barajas",
+      "latitude": 40.45,
+      "longitude": -3.55,
+      "url": "https://www.tutiempo.net/clima/ws-82210.html"
+    },
+    {
+      "code": "82220",
+      "name": "MADRID",
+      "latitude": 40.41,
+      "longitude": -3.68,
+      "url": "https://www.tutiempo.net/clima/ws-82220.html"
+    },
+    {
+      "code": "82230",
+      "name": "Madrid / Cuatro Vientos",
+      "latitude": 40.38,
+      "longitude": -3.78,
+      "url": "https://www.tutiempo.net/clima/ws-82230.html"
+    },
+    {
+      "code": "82240",
+      "name": "Madrid / Getafe",
+      "latitude": 40.3,
+      "longitude": -3.71,
+      "url": "https://www.tutiempo.net/clima/ws-82240.html"
+    },
+    {
+      "code": "82260",
+      "name": "GUADALAJARA",
+      "latitude": 40.66,
+      "longitude": -3.16,
+      "url": "https://www.tutiempo.net/clima/ws-82260.html"
+    },
+    {
+      "code": "82270",
+      "name": "Madrid / Torrejon",
+      "latitude": 40.48,
+      "longitude": -3.46,
+      "url": "https://www.tutiempo.net/clima/ws-82270.html"
+    },
+    {
+      "code": "82310",
+      "name": "CUENCA",
+      "latitude": 40.06,
+      "longitude": -2.13,
+      "url": "https://www.tutiempo.net/clima/ws-82310.html"
+    },
+    {
+      "code": "82320",
+      "name": "MOLINA DE ARAGON",
+      "latitude": 40.85,
+      "longitude": -1.88,
+      "url": "https://www.tutiempo.net/clima/ws-82320.html"
+    },
+    {
+      "code": "82330",
+      "name": "Calamocha",
+      "latitude": 40.93,
+      "longitude": -1.3,
+      "url": "https://www.tutiempo.net/clima/ws-82330.html"
+    },
+    {
+      "code": "82610",
+      "name": "CACERES",
+      "latitude": 39.46,
+      "longitude": -6.33,
+      "url": "https://www.tutiempo.net/clima/ws-82610.html"
+    },
+    {
+      "code": "82800",
+      "name": "Albacete / Los Llanos",
+      "latitude": 38.95,
+      "longitude": -1.85,
+      "url": "https://www.tutiempo.net/clima/ws-82800.html"
+    },
+    {
+      "code": "82860",
+      "name": "CASTELLON",
+      "latitude": 39.95,
+      "longitude": -0.06,
+      "url": "https://www.tutiempo.net/clima/ws-82860.html"
+    },
+    {
+      "code": "82900",
+      "name": "ALCIRA",
+      "latitude": 39.15,
+      "longitude": -0.43,
+      "url": "https://www.tutiempo.net/clima/ws-82900.html"
+    },
+    {
+      "code": "83010",
+      "name": "PALMA DE MALLORCA",
+      "latitude": 39.55,
+      "longitude": 2.61,
+      "url": "https://www.tutiempo.net/clima/ws-83010.html"
+    },
+    {
+      "code": "83060",
+      "name": "Palma De Mallorca / Son San Juan",
+      "latitude": 39.55,
+      "longitude": 2.73,
+      "url": "https://www.tutiempo.net/clima/ws-83060.html"
+    },
+    {
+      "code": "83140",
+      "name": "Menorca / Mahon",
+      "latitude": 39.86,
+      "longitude": 4.23,
+      "url": "https://www.tutiempo.net/clima/ws-83140.html"
+    },
+    {
+      "code": "83300",
+      "name": "Badajoz / Talavera La Real",
+      "latitude": 38.88,
+      "longitude": -6.81,
+      "url": "https://www.tutiempo.net/clima/ws-83300.html"
+    },
+    {
+      "code": "83350",
+      "name": "Hinojosa Del Duque",
+      "latitude": 38.51,
+      "longitude": -5.11,
+      "url": "https://www.tutiempo.net/clima/ws-83350.html"
+    },
+    {
+      "code": "83480",
+      "name": "CIUDAD REAL",
+      "latitude": 38.98,
+      "longitude": -3.91,
+      "url": "https://www.tutiempo.net/clima/ws-83480.html"
+    },
+    {
+      "code": "83590",
+      "name": "ALICANTE",
+      "latitude": 38.36,
+      "longitude": -0.5,
+      "url": "https://www.tutiempo.net/clima/ws-83590.html"
+    },
+    {
+      "code": "83600",
+      "name": "Alicante / El Altet",
+      "latitude": 38.28,
+      "longitude": -0.55,
+      "url": "https://www.tutiempo.net/clima/ws-83600.html"
+    },
+    {
+      "code": "83610",
+      "name": "AITANA MOUNTAIN",
+      "latitude": 38.65,
+      "longitude": -0.26,
+      "url": "https://www.tutiempo.net/clima/ws-83610.html"
+    },
+    {
+      "code": "83650",
+      "name": "DENIA-IN-VALENCIA",
+      "latitude": 38.83,
+      "longitude": 0.1,
+      "url": "https://www.tutiempo.net/clima/ws-83650.html"
+    },
+    {
+      "code": "83730",
+      "name": "Ibiza / Es Codola",
+      "latitude": 38.88,
+      "longitude": 1.38,
+      "url": "https://www.tutiempo.net/clima/ws-83730.html"
+    },
+    {
+      "code": "83830",
+      "name": "HUELVA",
+      "latitude": 37.28,
+      "longitude": -6.91,
+      "url": "https://www.tutiempo.net/clima/ws-83830.html"
+    },
+    {
+      "code": "83970",
+      "name": "Moron De La Frontera",
+      "latitude": 37.15,
+      "longitude": -5.61,
+      "url": "https://www.tutiempo.net/clima/ws-83970.html"
+    },
+    {
+      "code": "84100",
+      "name": "Cordoba / Aeropuerto",
+      "latitude": 37.85,
+      "longitude": -4.83,
+      "url": "https://www.tutiempo.net/clima/ws-84100.html"
+    },
+    {
+      "code": "84170",
+      "name": "JAEN",
+      "latitude": 37.78,
+      "longitude": -3.8,
+      "url": "https://www.tutiempo.net/clima/ws-84170.html"
+    },
+    {
+      "code": "84190",
+      "name": "Granada / Aeropuerto",
+      "latitude": 37.18,
+      "longitude": -3.78,
+      "url": "https://www.tutiempo.net/clima/ws-84190.html"
+    },
+    {
+      "code": "84200",
+      "name": "GRANADA/ARMILLA",
+      "latitude": 37.13,
+      "longitude": -3.61,
+      "url": "https://www.tutiempo.net/clima/ws-84200.html"
+    },
+    {
+      "code": "84290",
+      "name": "Murcia / Alcantarilla",
+      "latitude": 37.95,
+      "longitude": -1.23,
+      "url": "https://www.tutiempo.net/clima/ws-84290.html"
+    },
+    {
+      "code": "84300",
+      "name": "MURCIA",
+      "latitude": 38,
+      "longitude": -1.16,
+      "url": "https://www.tutiempo.net/clima/ws-84300.html"
+    },
+    {
+      "code": "84310",
+      "name": "CASTILLO GALERAS",
+      "latitude": 37.58,
+      "longitude": -1,
+      "url": "https://www.tutiempo.net/clima/ws-84310.html"
+    },
+    {
+      "code": "84330",
+      "name": "Murcia / San Javier",
+      "latitude": 37.78,
+      "longitude": -0.8,
+      "url": "https://www.tutiempo.net/clima/ws-84330.html"
+    },
+    {
+      "code": "84490",
+      "name": "Rota",
+      "latitude": 36.65,
+      "longitude": -6.35,
+      "url": "https://www.tutiempo.net/clima/ws-84490.html"
+    },
+    {
+      "code": "84510",
+      "name": "Jerez de la Frontera aeropuerto",
+      "latitude": 36.75,
+      "longitude": -6.06,
+      "url": "https://www.tutiempo.net/clima/ws-84510.html"
+    },
+    {
+      "code": "84520",
+      "name": "CADIZ BAY",
+      "latitude": 36.53,
+      "longitude": -6.28,
+      "url": "https://www.tutiempo.net/clima/ws-84520.html"
+    },
+    {
+      "code": "84820",
+      "name": "Malaga / Aeropuerto",
+      "latitude": 36.66,
+      "longitude": -4.48,
+      "url": "https://www.tutiempo.net/clima/ws-84820.html"
+    },
+    {
+      "code": "84870",
+      "name": "Almería / Aeropuerto",
+      "latitude": 36.85,
+      "longitude": -2.38,
+      "url": "https://www.tutiempo.net/clima/ws-84870.html"
+    },
+    {
+      "code": "84900",
+      "name": "ALBORAN ISLAND",
+      "latitude": 35.95,
+      "longitude": -3.01,
+      "url": "https://www.tutiempo.net/clima/ws-84900.html"
+    },
+    {
+      "code": "85480",
+      "name": "COIMBRA/CERNACHE",
+      "latitude": 40.15,
+      "longitude": -8.46,
+      "url": "https://www.tutiempo.net/clima/ws-85480.html"
+    },
+    {
+      "code": "89120",
+      "name": "ISABA REFUGIO BELAG",
+      "latitude": 42.95,
+      "longitude": -0.83,
+      "url": "https://www.tutiempo.net/clima/ws-89120.html"
+    },
+    {
+      "code": "89220",
+      "name": "PANTICOSA REFUGIO C",
+      "latitude": 42.76,
+      "longitude": -0.23,
+      "url": "https://www.tutiempo.net/clima/ws-89220.html"
+    },
+    {
+      "code": "600010",
+      "name": "Hierro / Aeropuerto",
+      "latitude": 27.81,
+      "longitude": -17.88,
+      "url": "https://www.tutiempo.net/clima/ws-600010.html"
+    },
+    {
+      "code": "600050",
+      "name": "La Palma / Aeropuerto",
+      "latitude": 28.61,
+      "longitude": -17.75,
+      "url": "https://www.tutiempo.net/clima/ws-600050.html"
+    },
+    {
+      "code": "600070",
+      "name": "LA GOMERA/AEROPUERT",
+      "latitude": 28.03,
+      "longitude": -17.21,
+      "url": "https://www.tutiempo.net/clima/ws-600070.html"
+    },
+    {
+      "code": "600100",
+      "name": "IZANA",
+      "latitude": 28.31,
+      "longitude": -16.5,
+      "url": "https://www.tutiempo.net/clima/ws-600100.html"
+    },
+    {
+      "code": "600300",
+      "name": "Las Palmas De Gran Canaria / Gando",
+      "latitude": 27.93,
+      "longitude": -15.38,
+      "url": "https://www.tutiempo.net/clima/ws-600300.html"
+    },
+    {
+      "code": "600350",
+      "name": "Fuerteventura / Aeropuerto",
+      "latitude": 28.45,
+      "longitude": -13.86,
+      "url": "https://www.tutiempo.net/clima/ws-600350.html"
+    },
+    {
+      "code": "600400",
+      "name": "Lanzarote / Aeropuerto",
+      "latitude": 28.95,
+      "longitude": -13.6,
+      "url": "https://www.tutiempo.net/clima/ws-600400.html"
+    },
+    {
+      "code": "603200",
+      "name": "CEUTA",
+      "latitude": 35.9,
+      "longitude": -5.31,
+      "url": "https://www.tutiempo.net/clima/ws-603200.html"
+    },
+    {
+      "code": "603380",
+      "name": "Melilla",
+      "latitude": 35.28,
+      "longitude": -2.95,
+      "url": "https://www.tutiempo.net/clima/ws-603380.html"
+    },
+    {
+      "code": "696694",
+      "name": "MORON AB",
+      "latitude": 37.16,
+      "longitude": -5.61,
+      "url": "https://www.tutiempo.net/clima/ws-696694.html"
+    }
+  ]
+}
